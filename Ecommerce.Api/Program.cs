@@ -19,7 +19,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Servis Baglantisi (Dependency Injection)
 builder.Services.AddScoped<IProductService, ProductService>();
-
+// ProductService'in hemen altina ekle:
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 var app = builder.Build();
 
 // --- 2. HTTP Pipeline ---
