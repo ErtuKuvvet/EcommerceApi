@@ -26,6 +26,8 @@ public class CategoriesController : ControllerBase
     public async Task<IActionResult> Create(CreateCategoryDto category)
     {
         var result = await _categoryService.CreateCategoryAsync(category);
-        return Ok(result);
+        
+        // 201 Created döner
+        return CreatedAtAction(nameof(GetAll), new { id = result.Data!.Id }, result);
     }
 }

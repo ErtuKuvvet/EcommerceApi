@@ -29,6 +29,9 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> Create(CreateProductDto product)
     {
         var result = await _productService.CreateProductAsync(product);
-        return Ok(result);
+        
+        // ESKİSİ: return Ok(result);
+        // YENİSİ (201 Created döner):
+        return CreatedAtAction(nameof(GetAll), new { id = result.Data!.Id }, result);
     }
 }

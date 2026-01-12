@@ -33,12 +33,14 @@ public class OrderService : IOrderService
             UserId = dto.UserId,
             ProductId = dto.ProductId,
             Quantity = dto.Quantity,
-            TotalPrice = product.Price * dto.Quantity, // Fiyatı hesapla
-            CreateDate = DateTime.Now
+            TotalPrice = product.Price * dto.Quantity,
+            
+            // DÜZELTİLEN KISIM: Artık CreateDate değil, CreatedAt kullanıyoruz
+            CreatedAt = DateTime.Now 
         };
 
         _context.Orders.Add(newOrder);
-        await _context.SaveChangesAsync(); // Hem siparişi kaydet hem stoğu güncelle
+        await _context.SaveChangesAsync(); 
 
         // 5. Cevap hazırla
         var responseDto = new OrderDto
@@ -48,7 +50,9 @@ public class OrderService : IOrderService
             Price = product.Price,
             Quantity = newOrder.Quantity,
             TotalPrice = newOrder.TotalPrice,
-            OrderDate = newOrder.CreateDate
+            
+            // DÜZELTİLEN KISIM: Burada da CreatedAt kullanıyoruz
+            OrderDate = newOrder.CreatedAt 
         };
 
         return ServiceResponse<OrderDto>.SuccessResponse(responseDto, "Sipariş başarıyla oluşturuldu.");
@@ -56,7 +60,6 @@ public class OrderService : IOrderService
 
     public async Task<ServiceResponse<List<OrderDto>>> GetAllOrdersAsync()
     {
-        // Include(x => x.Product) diyerek ürün bilgilerini de çekiyoruz (JOIN işlemi)
         var orders = await _context.Orders
             .Include(x => x.Product)
             .ToListAsync();
@@ -68,7 +71,9 @@ public class OrderService : IOrderService
             Price = o.Product != null ? o.Product.Price : 0,
             Quantity = o.Quantity,
             TotalPrice = o.TotalPrice,
-            OrderDate = o.CreateDate
+            
+            // DÜZELTİLEN KISIM: Burada da CreatedAt
+            OrderDate = o.CreatedAt 
         }).ToList();
 
         return ServiceResponse<List<OrderDto>>.SuccessResponse(dtos);

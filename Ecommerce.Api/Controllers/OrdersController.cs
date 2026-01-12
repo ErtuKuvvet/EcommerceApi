@@ -30,8 +30,10 @@ public class OrdersController : ControllerBase
         var result = await _orderService.CreateOrderAsync(order);
         if (!result.Success)
         {
-            return BadRequest(result); // Hata varsa (stok yoksa) kırmızı uyarı ver
+            return BadRequest(result); // Hata varsa 400 döner
         }
-        return Ok(result);
+        
+        // Başarılıysa 201 Created döner
+        return CreatedAtAction(nameof(GetAll), new { id = result.Data!.Id }, result);
     }
 }

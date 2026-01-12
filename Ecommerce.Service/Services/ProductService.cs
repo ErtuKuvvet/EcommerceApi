@@ -2,13 +2,12 @@ namespace Ecommerce.Service.Services;
 
 using Ecommerce.Data;
 using Ecommerce.Service.DTOs;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Bu kütüphane .Include() için şart
 
 public class ProductService : IProductService
 {
     private readonly AppDbContext _context;
 
-    // Veritabanı bağlantısını buraya çağırıyoruz (Constructor Injection)
     public ProductService(AppDbContext context)
     {
         _context = context;
@@ -17,7 +16,6 @@ public class ProductService : IProductService
     // 1. Ürün Ekleme Metodu
     public async Task<ServiceResponse<ProductDto>> CreateProductAsync(CreateProductDto dto)
     {
-        // Gelen DTO'yu Veritabanı Nesnesine (Entity) çevir
         var newProduct = new Product
         {
             Name = dto.Name,
@@ -28,37 +26,37 @@ public class ProductService : IProductService
             IsDeleted = false
         };
 
-        // Veritabanına ekle ve kaydet
         _context.Products.Add(newProduct);
         await _context.SaveChangesAsync();
 
-        // Geriye döndürmek için tekrar DTO'ya çevir
         var responseDto = new ProductDto
         {
             Id = newProduct.Id,
             Name = newProduct.Name,
             Price = newProduct.Price,
             Stock = newProduct.Stock,
-            CategoryName = "Şimdilik Yok" // Kategoriyi sonra bağlayacağız
+            CategoryName = "Listeleme ekranında görünecek" 
         };
 
         return ServiceResponse<ProductDto>.SuccessResponse(responseDto, "Ürün başarıyla eklendi");
     }
 
-    // 2. Tüm Ürünleri Getirme Metodu
+    // 2. Tüm Ürünleri Getirme Metodu (GÜNCELLENEN KISIM)
     public async Task<ServiceResponse<List<ProductDto>>> GetAllProductsAsync()
     {
-        // Veritabanından tüm ürünleri çek
-        var products = await _context.Products.ToListAsync();
+        // Include(x => x.Category) diyerek veritabanından kategori ismini de çekiyoruz (JOIN)
+        var products = await _context.Products
+            .Include(p => p.Category) 
+            .ToListAsync();
 
-        // Entity listesini DTO listesine çevir
         var dtos = products.Select(p => new ProductDto
         {
             Id = p.Id,
             Name = p.Name,
             Price = p.Price,
             Stock = p.Stock,
-            CategoryName = "Kategori Yok"
+            // Eğer kategori varsa ismini yaz, yoksa 'Kategori Yok' yaz
+            CategoryName = p.Category != null ? p.Category.Name : "Kategori Yok"
         }).ToList();
 
         return ServiceResponse<List<ProductDto>>.SuccessResponse(dtos);
