@@ -11,5 +11,5 @@ public class User : BaseEntity
 
     // İlişkiler (Bir kullanıcının birden çok siparişi olur)
     // Şimdilik burayı yorum satırı yapıyoruz, Order tablosunu yazınca açacağız.
-    // public List<Order> Orders { get; set; } = new();
+public List<Order> Orders { get; set; } = new();
 }

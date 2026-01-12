@@ -1,16 +1,16 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Servisleri ekledigimiz yer (Dependency Injection)
+// Servisleri ekle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); // Artık bu satır hata vermemeli
 
 var app = builder.Build();
 
-// HTTP istek boru hatti (Pipeline)
+// HTTP isteklerini yönet
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger();      // Bu da düzelmeli
+    app.UseSwaggerUI();    // Bu da düzelmeli
 }
 
 app.UseHttpsRedirection();
