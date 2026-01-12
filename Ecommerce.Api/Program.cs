@@ -1,16 +1,27 @@
+using Ecommerce.Data; // AppDbContext'i tanimasi icin
+using Microsoft.EntityFrameworkCore; // UseSqlite'i tanimasi icin
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Servisleri ekle
+// --- 1. Servislerin Eklendigi Bölüm ---
+
+// Swagger servisleri
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // Artık bu satır hata vermemeli
+builder.Services.AddSwaggerGen();
+
+// Veritabani Baglantisi (SQLite)
+// "Data Source=app.db" diyerek projenin ana klasorunde app.db adinda bir dosya olusturacagini soyluyoruz.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=app.db"));
 
 var app = builder.Build();
 
-// HTTP isteklerini yönet
+// --- 2. HTTP Istek Boru Hatti (Pipeline) ---
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();      // Bu da düzelmeli
-    app.UseSwaggerUI();    // Bu da düzelmeli
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
