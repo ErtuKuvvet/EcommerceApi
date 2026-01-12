@@ -1,30 +1,39 @@
-using Ecommerce.Data;
-using Ecommerce.Service.Services;
-using Microsoft.EntityFrameworkCore;
+using Ecommerce.Data;                 // Veritabanı context'i için
+using Ecommerce.Service.Services;     // Servislerimizi tanıtmak için (Product, Category, Order)
+using Microsoft.EntityFrameworkCore;  // SQL ayarları için
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. Servis Ayarları ---
+// --------------------------------------------------------
+// 1. SERVİSLERİN EKLENDİĞİ BÖLÜM (Konfigürasyon)
+// --------------------------------------------------------
 
-// Controller destegini ekle (YENI EKLENDI)
+// Controller desteğini açıyoruz (API uçları için şart)
 builder.Services.AddControllers();
 
-// Swagger
+// Swagger (API Dokümantasyonu) ayarları
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Veritabani
+// Veritabanı Bağlantısı (SQLite)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));
 
-// Servis Baglantisi (Dependency Injection)
+// --- KENDİ YAZDIĞIMIZ SERVİSLERİ BURADA TANITIYORUZ ---
+// (Sırasıyla: Ürün, Kategori ve Sipariş servisleri)
 builder.Services.AddScoped<IProductService, ProductService>();
-// ProductService'in hemen altina ekle:
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// --------------------------------------------------------
+
 var app = builder.Build();
 
-// --- 2. HTTP Pipeline ---
+// --------------------------------------------------------
+// 2. ÇALIŞMA ZAMANI AYARLARI (Middleware)
+// --------------------------------------------------------
 
+// Geliştirme modundaysak Swagger'ı göster
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -33,7 +42,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Controller rotalarini aktif et (YENI EKLENDI)
+// Controller'ları haritala (İstekleri yönlendir)
 app.MapControllers();
 
 app.Run();
