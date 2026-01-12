@@ -29,6 +29,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 
+
+
+// Kendi yazdığımız hata yakalama middleware'ini kullan:
+app.UseMiddleware<Ecommerce.Api.Middlewares.GlobalExceptionMiddleware>();
+// ------------------------------------
+
 // --------------------------------------------------------
 // 2. ÇALIŞMA ZAMANI AYARLARI (Middleware)
 // --------------------------------------------------------

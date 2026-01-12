@@ -44,6 +44,8 @@ public class ProductService : IProductService
     // 2. Tüm Ürünleri Getirme Metodu (GÜNCELLENEN KISIM)
     public async Task<ServiceResponse<List<ProductDto>>> GetAllProductsAsync()
     {
+       //throw new Exception("TEST HATASI: Bakalım sistem yakalayacak mı?");
+        
         // Include(x => x.Category) diyerek veritabanından kategori ismini de çekiyoruz (JOIN)
         var products = await _context.Products
             .Include(p => p.Category) 
