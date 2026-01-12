@@ -1,45 +1,40 @@
-using Ecommerce.Data;                 // Veritabanı context'i için
-using Ecommerce.Service.Services;     // Servislerimizi tanıtmak için (Product, Category, Order)
-using Microsoft.EntityFrameworkCore;  // SQL ayarları için
+using Ecommerce.Data;
+using Ecommerce.Service.Services; // Servisler için
+using Ecommerce.Service.DTOs;     // DTO'lar için
+using Microsoft.EntityFrameworkCore;
+using Ecommerce.Api.Middlewares;  // Hata yakalama middleware'i için
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------------------------------------------
-// 1. SERVİSLERİN EKLENDİĞİ BÖLÜM (Konfigürasyon)
+// 1. SERVİSLERİN EKLENDİĞİ BÖLÜM (DI Container)
 // --------------------------------------------------------
 
-// Controller desteğini açıyoruz (API uçları için şart)
+// Controller desteği (Products ve Orders için hala lazım)
 builder.Services.AddControllers();
 
-// Swagger (API Dokümantasyonu) ayarları
+// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Veritabanı Bağlantısı (SQLite)
+// Veritabanı (SQLite)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));
 
-// --- KENDİ YAZDIĞIMIZ SERVİSLERİ BURADA TANITIYORUZ ---
-// (Sırasıyla: Ürün, Kategori ve Sipariş servisleri)
+// Kendi Servislerimiz
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-// --------------------------------------------------------
-
 var app = builder.Build();
 
-
-
-// Kendi yazdığımız hata yakalama middleware'ini kullan:
-app.UseMiddleware<Ecommerce.Api.Middlewares.GlobalExceptionMiddleware>();
-// ------------------------------------
-
 // --------------------------------------------------------
-// 2. ÇALIŞMA ZAMANI AYARLARI (Middleware)
+// 2. MIDDLEWARE (Ara Katmanlar)
 // --------------------------------------------------------
 
-// Geliştirme modundaysak Swagger'ı göster
+// Kendi yazdığımız Hata Yakalayıcı (Global Exception Handler)
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -48,7 +43,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Controller'ları haritala (İstekleri yönlendir)
+// Klasik Controller'ları haritala (Products ve Orders buradan çalışır)
 app.MapControllers();
+
+// --------------------------------------------------------
+// 3. MINIMAL API ENDPOINTLERİ (Sadece Kategoriler İçin)
+// --------------------------------------------------------
+// Hocanın istediği "Minimal API" şartını burada sağlıyoruz.
+// Artık CategoriesController yok, rotalar burada:
+
+// GET: Tüm Kategorileri Getir
+app.MapGet("/api/categories", async (ICategoryService service) =>
+{
+    var result = await service.GetAllCategoriesAsync();
+    return Results.Ok(result);
+})
+.WithTags("Categories"); // Swagger'da "Categories" başlığı altında görünsün diye
+
+// POST: Yeni Kategori Ekle
+app.MapPost("/api/categories", async (ICategoryService service, CreateCategoryDto dto) =>
+{
+    var result = await service.CreateCategoryAsync(dto);
+    
+    // 201 Created Dönüyoruz (Ödev Şartı)
+    return Results.Created($"/api/categories/{result.Data!.Id}", result);
+})
+.WithTags("Categories");
+
+// --------------------------------------------------------
 
 app.Run();
